@@ -5,10 +5,11 @@ module Kafo
   class HieraConfigurer
     attr_reader :temp_dir, :config_path, :data_dir, :logger
 
-    def initialize(user_config_path, modules, modules_order)
+    def initialize(user_config_path, modules, modules_order, hiera_custom_values)
       @user_config_path = user_config_path
       @modules = modules
       @modules_order = modules_order
+      @hiera_custom_values = hiera_custom_values
       @logger = KafoConfigure.logger
     end
 
@@ -39,6 +40,10 @@ module Kafo
         FileUtils.mkdir(data_dir)
       end
 
+      File.open(File.join(data_dir, 'kafo_custom.yaml'), 'w') do |f|
+        f.write(format_yaml_symbols(@custom_hiera_vales.to_yaml))
+      end
+
       File.open(File.join(data_dir, 'kafo_answers.yaml'), 'w') do |f|
         f.write(format_yaml_symbols(generate_data(@modules).to_yaml))
       end
@@ -54,6 +59,11 @@ module Kafo
       # ensure kafo_answers is present and most specific
       config[:hierarchy] ||= []
       config[:hierarchy].unshift('kafo_answers') unless config[:hierarchy].include?('kafo_answers')
+
+      # ensure kafo_custom is present and just before kafo_answers
+      unless config[:hierarchy].include?('kafo_custom')
+        config[:hierarchy].insert(config[:hierarchy].find_index('kafo_answers'), 'kafo_custom')
+      end
 
       # use our copy of the data dir
       config[:yaml] ||= {}

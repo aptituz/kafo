@@ -90,5 +90,12 @@ module Kafo
     def store_custom_config(key, value)
       self.kafo.config.set_custom(key, value)
     end
+
+    # you can set custom hiera values that will have precedence over kafo_answers
+    # example:
+    #   set_hiera_value('postgresql::server::listen_addresses') = '192.168.0.1'
+    def set_hiera_value(key, value)
+      self.kafo.config.custom_hiera_values[key.to_sym] = value
+    end
   end
 end

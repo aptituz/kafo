@@ -284,6 +284,10 @@ module Kafo
       app[:custom]
     end
 
+    def custom_hiera_values
+      @custom_hiera_values ||= {}
+    end
+
     def includes
       modules.map do |mod|
         module_dir = module_dirs.find do |dir|
